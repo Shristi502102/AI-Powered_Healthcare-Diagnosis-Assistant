@@ -36,7 +36,7 @@ Render static sites can idle after inactivity; GitHub Pages never does.
 
 | Home / Hero | Symptom Checklist |
 |---|---|
-| ![Hero section](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20130524.jpg) | ![Symptom checklist](screenshots/symptom-checklist.png) |
+| ![Hero section](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20130524.jpg) | ![Symptom checklist](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20131058.jpg)|
 
 | Results — Risk & Matches | Emergency Banner |
 |---|---|
