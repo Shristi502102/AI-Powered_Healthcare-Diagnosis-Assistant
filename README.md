@@ -1,93 +1,216 @@
-# Vital Signs — Symptom Guide
+# 🩺 Vital Signs — AI-Powered Healthcare Diagnosis Assistant
 
-A free, static, client-side symptom checker. No backend, no API keys, no
-ongoing cost. Everything (matching logic, risk scoring, history) runs in
-the visitor's browser using plain HTML/CSS/JS.
+A free, static, client-side symptom guide. No backend, no API keys, no
+database, no ongoing hosting cost. Everything — symptom matching, risk
+scoring, history, even "training" on your own data — runs entirely in
+the visitor's browser.
 
-**This is an educational tool, not a medical device.** It cannot and does
-not claim diagnostic accuracy — see the in-app "About & limits" tab.
+> **This is an educational tool, not a medical device.** It does not
+> diagnose anyone. See [Limitations](#️-limitations--disclaimer) below.
 
-## Run locally
+---
 
-Just open `index.html` in a browser. No build step, no install.
+## 🔗 Live Demo
 
-Or serve it locally:
-```bash
-npx serve .
+| Platform | URL | Notes |
+|---|---|---|
+| **Render** | **[ai-powered-healthcare-diagnosis-assistant.onrender.com](https://ai-powered-healthcare-diagnosis-assistant.onrender.com/)** | ✅ Live |
+| **GitHub Pages** | **[shristi502102.github.io/AI-Powered_Healthcare-Diagnosis-Assistant](https://shristi502102.github.io/AI-Powered_Healthcare-Diagnosis-Assistant/)** | ✅ Live, never sleeps |
+
+Both serve the exact same `index.html` — pick whichever link is
+convenient. GitHub Pages is the more reliable long-term link since free
+Render static sites can idle after inactivity; GitHub Pages never does.
+
+---
+
+## 📸 Screenshots
+
+<!--
+  Add your own screenshots here — takes under a minute:
+  1. Open the live site, press F12 → toggle device toolbar off for desktop shots
+  2. Take a screenshot of each screen below (Win: Win+Shift+S, Mac: Cmd+Shift+4)
+  3. Save each into a "screenshots" folder in this repo, using the filenames below
+  4. Upload that folder to GitHub the same way you uploaded index.html
+  Once the files exist at those paths, the images below will render automatically.
+-->
+
+| Home / Hero | Symptom Checklist |
+|---|---|
+| ![Hero section](screenshots/hero.png) | ![Symptom checklist](screenshots/symptom-checklist.png) |
+
+| Results — Risk & Matches | Emergency Banner |
+|---|---|
+| ![Results screen](screenshots/results.png) | ![Emergency banner](screenshots/emergency.png) |
+
+| Train From Data | AI Explain (optional) |
+|---|---|
+| ![Train from data](screenshots/train-data.png) | ![AI explain](screenshots/ai-explain.png) |
+
+| History Tab | Printable PDF Report |
+|---|---|
+| ![History](screenshots/history.png) | ![Print report](screenshots/print-report.png) |
+
+*(Until you add image files, GitHub will just show broken-image icons
+here — that's expected and harmless.)*
+
+---
+
+## ✨ Features
+
+- **Symptom checker** — organized checklist across General, Respiratory,
+  Digestive, Neurological, Skin, and Other categories
+- **Ranked condition matches** — percentage match based on symptom
+  overlap against an 18-condition reference table, not a black-box score
+- **Risk engine** — combines age, temperature, symptom burden, duration,
+  and existing conditions (diabetes, heart disease, immunocompromised,
+  pregnancy) into a Low / Medium / High read
+- **Emergency detection** — flags dangerous symptom combinations (e.g.
+  chest pain + shortness of breath) with an urgent red banner
+- **Specialist + precaution guidance** — tells you who to see and what
+  to do, per matched condition
+- **Printable PDF report** — includes patient name, date, age, symptoms,
+  risk level, and matches, formatted cleanly for "Save as PDF"
+- **History** — past checks saved to `localStorage` on your device only
+- **Train from your own data** — upload a Kaggle-style symptoms→disease
+  CSV/XLSX and the app learns new symptom-weight patterns from it (see
+  below)
+- **AI Explain (optional)** — bring your own Anthropic API key to get a
+  plain-language explanation of your results, layered on top of (never
+  replacing) the rule-based output
+
+---
+
+## 🧠 How the matching actually works
+
+This is **not** a neural network or a hosted ML model — it's
+transparent, auditable logic that runs client-side:
+
+1. Each of the 18 built-in conditions has a small table of symptoms with
+   weights (1–3) reflecting how characteristic that symptom is.
+2. When you select symptoms, the app computes:
+   - **Coverage** — how much of that condition's known pattern you matched
+   - **Precision** — how much of *your* selected symptoms that condition explains
+   - **Confidence %** — a blend of the two, capped at 97% (never 100%,
+     on purpose — see [Limitations](#️-limitations--disclaimer))
+3. Conditions are ranked by confidence and the top matches are shown.
+4. Risk score is computed separately from age, temperature, symptom
+   count, duration, and comorbidities.
+5. Emergency rules are checked independently — specific symptom
+   *combinations* (not single symptoms) trigger the urgent banner.
+
+### Training from your own dataset
+
+The "Train from data" tab accepts the common Kaggle
+"symptoms → disease" shape: one row per patient case, one `0`/`1`
+column per symptom, and a `Disease` (or `prognosis`/`diagnosis`) column.
+
+For each disease, it counts how often each symptom appears in that
+disease's rows and converts that frequency into a match weight — the
+same statistical idea behind a Naive Bayes classifier's priors, done
+with a simple `reduce` over the rows. It's genuinely learning from your
+data, just not a deep model. Newly discovered symptom columns are
+automatically added to the checklist UI. Everything is processed with
+[SheetJS](https://sheetjs.com/) in-browser; no file is ever uploaded to
+a server, because there is no server.
+
+---
+
+## 🛠️ Tech stack
+
+- **Frontend only:** HTML, CSS, vanilla JavaScript — zero frameworks,
+  zero build step
+- **Fonts:** Fraunces (headings), Inter (body), IBM Plex Mono (data/numbers)
+- **Data parsing:** SheetJS (`xlsx`) via CDN, for the training feature
+- **Storage:** `localStorage` for history, saved API key, and trained
+  dataset — nothing leaves the browser unless you explicitly enable AI
+  Explain
+- **Optional AI:** direct browser calls to the Anthropic API, using a
+  visitor-provided key (never bundled into the code)
+
+No database. No backend framework. No `.pkl` model files. This was a
+deliberate simplification from the original multi-module architecture
+sketched in the project's planning doc, in favor of something that
+deploys in one click and costs nothing to run.
+
+---
+
+## 📁 Project structure
+
+```
+AI-Powered_Healthcare-Diagnosis-Assistant/
+├── index.html      → the entire app: markup, styles, logic, dataset
+├── README.md        → this file
+├── package.json      → tells Railway/Render how to serve it (optional)
+├── Procfile      → fallback start command for Railway (optional)
+└── screenshots/     → images referenced in this README (add your own)
 ```
 
-## Deploy on GitHub Pages (free)
+`index.html` is the only file required for the site to work. Everything
+else is optional tooling for specific hosts.
 
-1. Push this folder to a GitHub repo.
-2. Go to **Settings → Pages**.
-3. Under "Build and deployment", set **Source: Deploy from a branch**.
-4. Choose branch `main`, folder `/ (root)`, then **Save**.
-5. Your site will be live at `https://<username>.github.io/<repo>/` within
-   a minute or two.
+---
 
-No workflow file needed — it's a static site.
+## 🚀 Deployment
 
-## Deploy on Railway (free tier)
+### GitHub Pages (recommended — free, always-on)
+1. Push/upload files to your repo
+2. **Settings → Pages → Source: Deploy from a branch**
+3. Branch: `main`, folder: `/ (root)` → **Save**
+4. Live at `https://<username>.github.io/<repo>/](https://ai-powered-healthcare-diagnosis-assistant.onrender.com/` in ~1 minute
 
-This repo includes both a `package.json` and a `Procfile` so Railway's
-Nixpacks builder detects it automatically as a Node app and serves the
-static files with zero configuration:
+### Render (currently also live)
+1. [render.com](https://render.com) → sign in with GitHub → **New → Static Site**
+2. Connect this repo
+3. Build Command: *(leave blank)* · Publish Directory: `.`
+4. **Create Static Site**
 
-1. Create a new Railway project → **Deploy from GitHub repo**.
-2. Select this repo. Railway auto-detects Node via `package.json`.
-3. It will run `npm start`, which serves the folder with the `serve`
-   package on Railway's assigned `$PORT`.
-4. Once deployed, click **Generate Domain** to get a public URL.
+Note: free Render static sites can idle after inactivity, causing a
+slower first load after a period with no visitors. GitHub Pages doesn't
+have this behavior.
 
-No environment variables, database, or API key required.
+### Railway (optional, also supported)
+`package.json` and `Procfile` are already set up so Railway auto-detects
+this as a Node app and serves it with the `serve` package — no config
+needed. Deploy from GitHub repo → Railway builds automatically →
+**Generate Domain** for a public URL.
 
-## Project structure
+---
 
-```
-index.html    → entire app (markup, styles, logic, data)
-package.json  → tells Railway how to serve it
-Procfile      → fallback start command
-README.md     → this file
-```
+## 🔒 Privacy
 
-## New features
+Everything runs client-side. There is no server collecting or storing
+patient data. History is saved only in that browser's local storage.
+If you enable AI Explain, your typed-in API key is stored only in that
+browser and calls go directly from your browser to Anthropic's API —
+never through any server belonging to this project.
 
-**Printable PDF report** — the "About you" form now has a Name field. Tap
-"Download / print report (PDF)" on the results screen; a clean,
-button-free version of the report (name, date, age, symptoms, risk,
-matches) is what prints — use your browser's "Save as PDF" destination.
+---
 
-**Train from your data** — the "Train from data" tab accepts a .xlsx or
-.csv file in the common Kaggle "symptoms → disease" shape: one row per
-case, one 0/1 column per symptom, and a `Disease` (or `prognosis` /
-`diagnosis`) column with the label. It counts how often each symptom
-co-occurs with each disease in your file and turns that into match
-weights, added alongside the built-in dataset. This is simple, transparent
-statistical learning — not a neural network — and it all happens in the
-browser via SheetJS; no file is uploaded anywhere. It's remembered in
-that browser via local storage; use "Reset to built-in dataset" to undo.
+## ⚠️ Limitations & Disclaimer
 
-**AI explain (optional, bring your own key)** — off by default, costs
-nothing unless a visitor turns it on with their own Anthropic API key.
-The key is stored only in that browser's local storage and calls
-`api.anthropic.com` directly from the browser — there's still no backend.
-Anyone who opens dev tools on that browser could see the key, so this is
-meant for personal use, not for asking random site visitors to paste in
-a key on your behalf. It adds a plain-language explanation under the
-rule-based results; it never replaces or overrides the rule-based scores.
+- **No symptom checker can be 100% accurate**, including this one.
+  Confidence scores are capped below 100% deliberately, because
+  certainty without a clinical exam and tests isn't honest.
+- This is **rule-based pattern matching** against a small reference
+  table — not a trained diagnostic model, and it has no knowledge of
+  your full medical history.
+- It is **not a substitute for professional medical advice, diagnosis,
+  or treatment.** Always consult a qualified healthcare provider.
+- In an emergency, contact your local emergency number immediately —
+  don't wait on any app, including this one.
 
-## Extending it
+---
 
-- Add more conditions/symptoms by editing the `CONDITIONS` and
-  `SYMPTOM_GROUPS` objects near the top of the `<script>` block in
-  `index.html`.
-- To add an LLM-generated plain-language explanation on top of the
-  rule-based match, you'd need a small backend to hold an API key
-  (never put an LLM API key in client-side JS). That's an optional
-  paid step — the app is fully functional and free without it.
+## 🗺️ Possible future additions
 
-## Disclaimer
+- Multi-language support (the original project sheet called out Hindi)
+- Voice-based symptom input
+- Larger, community-contributed symptom/disease dataset
+- Downloadable structured PDF (beyond browser print-to-PDF)
 
-Not a substitute for professional medical advice, diagnosis, or
-treatment. Always consult a qualified healthcare provider. In an
-emergency, contact your local emergency number immediately.
+---
+
+## 📄 License
+
+Educational project. Not a licensed medical device. Use, fork, and
+modify freely for learning purposes.
