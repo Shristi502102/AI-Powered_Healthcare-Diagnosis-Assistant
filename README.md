@@ -50,8 +50,7 @@ Render static sites can idle after inactivity; GitHub Pages never does.
 |---|---|
 | ![History](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20133302.jpg) | ![Print report](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20134531.jpg) |
 
-*(Until you add image files, GitHub will just show broken-image icons
-here — that's expected and harmless.)*
+
 
 ---
 
