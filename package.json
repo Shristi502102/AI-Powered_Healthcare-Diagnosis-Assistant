@@ -1,0 +1,11 @@
+{
+  "name": "vital-signs-symptom-checker",
+  "version": "1.0.0",
+  "description": "Static, client-side symptom guide. No backend, no API costs.",
+  "scripts": {
+    "start": "npx --yes serve -s . -l $PORT"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vital Signs Check — Symptom Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --ink:#0B1F2A;
+  --paper:#F4F7F7;
+  --card:#FFFFFF;
+  --teal:#0F6E6E;
+  --teal-deep:#0A4F4F;
+  --teal-pale:#E4F0EE;
+  --alert:#B3392E;
+  --alert-pale:#FBEAE8;
+  --amber:#B67A24;
+  --amber-pale:#FBF1E1;
+  --sage:#3F7F5C;
+  --sage-pale:#E9F3ED;
+  --line:#D8E1E0;
+  --muted:#5B6E6D;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  line-height:1.5;
+}
+.mono{font-family:'IBM Plex Mono',monospace;}
+h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0 0 .4em;}
+p{margin:0 0 1em;color:var(--muted);}
+.wrap{max-width:840px;margin:0 auto;padding:0 24px;}
+
+/* ---------- HERO ---------- */
+header.hero{
+  padding:56px 0 40px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#EFF6F5 0%, var(--paper) 100%);
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--teal-deep);
+  background:var(--teal-pale);
+  padding:5px 10px;border-radius:20px;
+  margin-bottom:18px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulseDot 1.6s ease-in-out infinite;}
+@keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.25;}}
+header.hero h1{font-size:clamp(32px,5vw,46px);max-width:11ch;color:var(--ink);}
+header.hero .lede{font-size:17px;max-width:52ch;}
+
+.pulse-wrap{margin:28px 0 8px;border:1px solid var(--line);background:var(--card);border-radius:12px;overflow:hidden;}
+.pulse-wrap svg{display:block;width:100%;height:90px;}
+#pulseLine{stroke:var(--teal);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 3.2s ease-in-out infinite;}
+@keyframes draw{0%{stroke-dashoffset:1400;}55%{stroke-dashoffset:0;}100%{stroke-dashoffset:-1400;}}
+
+.disclaimer-strip{
+  display:flex;gap:10px;align-items:flex-start;
+  background:var(--amber-pale);border:1px solid #EAD3A3;
+  color:#6B4A16;padding:12px 14px;border-radius:10px;font-size:13.5px;margin-top:18px;
+}
+.disclaimer-strip b{color:#5A3C10;}
+
+/* ---------- NAV TABS ---------- */
+nav.tabs{
+  position:sticky;top:0;z-index:20;background:var(--paper);
+  border-bottom:1px solid var(--line);
+  padding-top:14px;
+}
+nav.tabs .wrap{display:flex;gap:4px;max-width:840px;}
+nav.tabs button{
+  font-family:'Inter',sans-serif;font-weight:600;font-size:14px;
+  background:none;border:none;cursor:pointer;color:var(--muted);
+  padding:10px 16px;border-bottom:2px solid transparent;
+}
+nav.tabs button.active{color:var(--teal-deep);border-bottom-color:var(--teal);}
+
+main{padding:32px 0 80px;}
+section.panel{display:none;}
+section.panel.active{display:block;}
+
+/* ---------- FORM ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px;}
+.card h3{font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:var(--teal-deep);font-family:'Inter',sans-serif;font-weight:700;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--ink);}
+input[type=number],input[type=text],select{
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+  font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+
+details.group{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+details.group summary{
+  cursor:pointer;list-style:none;padding:13px 16px;font-weight:600;font-size:14px;
+  display:flex;justify-content:space-between;align-items:center;background:#FAFCFC;
+}
+details.group summary::-webkit-details-marker{display:none;}
+details.group summary::after{content:'+';font-size:18px;color:var(--teal);}
+details.group[open] summary::after{content:'–';}
+.symptom-list{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;padding:14px 16px 16px;}
+.symptom-item{display:flex;align-items:center;gap:8px;font-size:14px;padding:4px 0;}
+.symptom-item input{width:16px;height:16px;accent-color:var(--teal);}
+
+.count-badge{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal-deep);
+  background:var(--teal-pale);padding:2px 8px;border-radius:10px;
+}
+
+.checkline{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:8px;}
+.checkline input{width:16px;height:16px;accent-color:var(--alert);}
+
+button.primary{
+  background:var(--teal);color:#fff;border:none;border-radius:9px;
+  padding:13px 22px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;
+  width:100%;
+}
+button.primary:hover{background:var(--teal-deep);}
+button.ghost{
+  background:none;border:1px solid var(--line);color:var(--ink);border-radius:9px;
+  padding:10px 18px;font-weight:600;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;
+}
+
+/* ---------- RESULTS ---------- */
+#results{display:none;}
+.emergency-banner{
+  background:var(--alert);color:#fff;border-radius:12px;padding:18px 20px;margin-bottom:20px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.emergency-banner h3{color:#fff;margin-bottom:4px;font-family:'Fraunces',serif;font-size:19px;}
+.emergency-banner p{color:#FBE4E1;margin:0;}
+
+.risk-card{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  border-radius:12px;padding:18px 22px;margin-bottom:18px;border:1px solid var(--line);}
+.risk-card .label{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;}
+.risk-card .level{font-family:'Fraunces',serif;font-size:26px;}
+.risk-low{background:var(--sage-pale);} .risk-low .level{color:var(--sage);}
+.risk-medium{background:var(--amber-pale);} .risk-medium .level{color:var(--amber);}
+.risk-high{background:var(--alert-pale);} .risk-high .level{color:var(--alert);}
+
+.condition{
+  border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--card);
+}
+.condition-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.condition-head h4{font-family:'Fraunces',serif;font-size:18px;margin:0;}
+.condition-head .pct{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--teal-deep);font-weight:600;}
+.bar-track{height:6px;background:var(--teal-pale);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.bar-fill{height:100%;background:var(--teal);border-radius:4px;width:0;transition:width .8s ease;}
+.condition-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;}
+.tag{background:var(--teal-pale);color:var(--teal-deep);padding:3px 9px;border-radius:20px;font-weight:600;}
+.condition ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;color:var(--muted);}
+
+.confidence-note{
+  font-size:13px;color:var(--muted);background:#FAFCFC;border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;margin-top:6px;
+}
+
+.action-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+
+/* history */
+.hist-item{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--card);}
+.hist-item .when{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
+
+footer{border-top:1px solid var(--line);padding:24px 0;font-size:12.5px;color:var(--muted);text-align:center;}
+
+@media(max-width:600px){
+  .symptom-list{grid-template-columns:1fr;}
+  .grid2{grid-template-columns:1fr;}
+  .risk-card{flex-direction:column;align-items:flex-start;}
+}
+@media (prefers-reduced-motion: reduce){
+  #pulseLine{animation:none;stroke-dashoffset:0;}
+  .eyebrow .dot{animation:none;}
+}
+
+/* ---------- new: uploads / training / ai ---------- */
+.upload-box{
+  border:2px dashed var(--line);border-radius:12px;padding:26px 20px;text-align:center;
+  background:#FAFCFC;cursor:pointer;
+}
+.upload-box.drag{border-color:var(--teal);background:var(--teal-pale);}
+.upload-box input[type=file]{display:none;}
+.upload-box .icon{font-size:26px;margin-bottom:8px;display:block;}
+.summary-box{background:var(--sage-pale);border:1px solid #BFDECB;border-radius:10px;padding:14px 16px;margin-top:14px;font-size:13.5px;color:#274F38;}
+.summary-box ul{margin:6px 0 0;padding-left:18px;}
+.small-btn{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);}
+.warn-box{background:var(--amber-pale);border:1px solid #EAD3A3;border-radius:10px;padding:12px 14px;font-size:13px;color:#6B4A16;margin-bottom:14px;}
+.key-row{display:flex;gap:8px;}
+.key-row input{flex:1;}
+.ai-output{
+  border:1px solid var(--teal);background:var(--teal-pale);border-radius:10px;padding:14px 16px;
+  margin-top:16px;font-size:14px;white-space:pre-wrap;
+}
+.pill-toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
+
+/* ---------- print report ---------- */
+.print-only{display:none;}
+@media print{
+  nav.tabs, header.hero .disclaimer-strip, .action-row, #saveHistBtn, #printBtn, #resetBtn,
+  .tab-btn, footer, .upload-box, #trainBtn, #aiExplainBtn { display:none !important; }
+  body{background:#fff;}
+  .card, .condition, .risk-card{border:1px solid #ccc;box-shadow:none;}
+  .print-only{display:block;}
+  #results{display:block !important;}
+  header.hero{padding:10px 0;}
+  .pulse-wrap{display:none;}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span> Educational tool — not a diagnosis</div>
+    <h1>Know what your symptoms might mean.</h1>
+    <p class="lede">Answer a few questions about how you're feeling. You'll get a ranked list of possible conditions with confidence levels, a risk read, and who to actually go see — all explained in plain terms.</p>
+    <div class="pulse-wrap">
+      <svg viewBox="0 0 700 90" preserveAspectRatio="none">
+        <path id="pulseLine" d="M0,45 L120,45 L145,45 L160,10 L180,80 L200,45 L230,45 L245,30 L260,45 L400,45 L420,45 L440,15 L460,75 L480,45 L510,45 L525,35 L540,45 L700,45"/>
+      </svg>
+    </div>
+    <div class="disclaimer-strip">
+      <span>⚠️</span>
+      <span><b>No symptom checker can be 100% accurate</b> — including this one. Overlapping symptoms make certainty impossible without a clinician and proper tests. Treat every result here as a starting point for a conversation with a real doctor, not an answer.</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap">
+    <button class="tab-btn active" data-tab="check">Check symptoms</button>
+    <button class="tab-btn" data-tab="train">Train from data</button>
+    <button class="tab-btn" data-tab="ai">AI explain (optional)</button>
+    <button class="tab-btn" data-tab="history">History</button>
+    <button class="tab-btn" data-tab="about">About &amp; limits</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- CHECK PANEL -->
+  <section class="panel active" id="panel-check">
+
+    <div class="card">
+      <h3>About you</h3>
+      <div class="grid2">
+        <div>
+          <label for="pname">Full name (for your report)</label>
+          <input type="text" id="pname" placeholder="e.g. Priya Sharma">
+        </div>
+        <div>
+          <label for="age">Age</label>
+          <input type="number" id="age" min="0" max="120" placeholder="e.g. 24">
+        </div>
+        <div>
+          <label for="gender">Gender</label>
+          <select id="gender">
+            <option value="">Prefer not to say</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="temp">Temperature (°C, if known)</label>
+          <input type="number" id="temp" step="0.1" placeholder="e.g. 38.5">
+        </div>
+        <div>
+          <label for="duration">Symptoms lasted (days)</label>
+          <input type="number" id="duration" min="0" placeholder="e.g. 3">
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <label>Existing conditions (check any that apply)</label>
+        <div class="checkline"><input type="checkbox" id="c-diabetes"><label for="c-diabetes" style="margin:0;font-weight:400;">Diabetes</label></div>
+        <div class="checkline"><input type="checkbox" id="c-heart"><label for="c-heart" style="margin:0;font-weight:400;">Heart disease</label></div>
+        <div class="checkline"><input type="checkbox" id="c-immuno"><label for="c-immuno" style="margin:0;font-weight:400;">Immunocompromised / on immunosuppressants</label></div>
+        <div class="checkline"><input type="checkbox" id="c-pregnant"><label for="c-pregnant" style="margin:0;font-weight:400;">Pregnant</label></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3>Symptoms</h3>
+        <span class="count-badge" id="selCount">0 selected</span>
+      </div>
+      <div id="symptomGroups"></div>
+    </div>
+
+    <button class="primary" id="analyzeBtn">Analyze symptoms</button>
+  </section>
+
+  <!-- RESULTS (rendered under the check panel) -->
+  <section id="results" class="wrap" style="padding:0;">
+    <div class="print-only" id="printHeader" style="margin-bottom:18px;border-bottom:2px solid #333;padding-bottom:10px;">
+      <h2 style="margin-bottom:2px;">Symptom Check Report</h2>
+      <div id="printMeta" style="font-family:'IBM Plex Mono',monospace;font-size:13px;"></div>
+    </div>
+    <div id="emergencySlot"></div>
+    <div id="riskSlot"></div>
+    <h3 style="margin-top:22px;">Possible conditions</h3>
+    <p style="font-size:13.5px;">Ranked by how closely your symptoms match each pattern. This is <b>symptom overlap</b>, not a lab-confirmed diagnosis.</p>
+    <div id="conditionList"></div>
+    <div class="confidence-note" id="lowMatchNote" style="display:none;">
+      None of the patterns in this tool's dataset matched closely. That's common — it just means this tool doesn't cover it well, not that nothing is wrong. Please see a doctor if symptoms persist or worsen.
+    </div>
+    <div id="aiOutputSlot"></div>
+    <div class="action-row">
+      <button class="ghost" id="saveHistBtn">Save to history</button>
+      <button class="ghost" id="aiExplainBtn">✨ Explain with AI</button>
+      <button class="ghost" id="printBtn">Download / print report (PDF)</button>
+      <button class="ghost" id="resetBtn">Start over</button>
+    </div>
+  </section>
+
+  <!-- TRAIN PANEL -->
+  <section class="panel" id="panel-train">
+    <div class="card">
+      <h3>Train the matcher on your own data</h3>
+      <p style="font-size:13.5px;">Upload an Excel (.xlsx) or CSV file shaped like the common Kaggle-style
+      "symptoms → disease" datasets: one row per patient case, one column per symptom (values <code>1</code>/<code>0</code>),
+      and one column with the disease name (header called <code>Disease</code>, <code>prognosis</code>, or <code>diagnosis</code>).</p>
+      <p style="font-size:13.5px;">This is <b>not</b> deep learning — it's a transparent statistical step: for each disease,
+      it counts how often each symptom shows up in that disease's rows, and turns that frequency into a match weight.
+      That weight then plugs into the same scoring engine you already saw. Honest framing: it's "learning from your data,"
+      not a black-box neural network.</p>
+
+      <label for="fileInput" style="margin-top:14px;">Dataset file</label>
+      <div class="upload-box" id="dropZone">
+        <span class="icon">📄</span>
+        <div><b>Click to upload</b> or drag a .xlsx / .csv file here</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Processed entirely in your browser — nothing is uploaded anywhere</div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+      </div>
+
+      <div id="trainSummary"></div>
+
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="ghost" id="clearTrainedBtn">Reset to built-in dataset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI EXPLAIN SETTINGS PANEL -->
+  <section class="panel" id="panel-ai">
+    <div class="card">
+      <h3>AI-generated explanations (optional, bring your own key)</h3>
+      <div class="warn-box">
+        This is off by default and costs nothing unless you turn it on. If you add your own Anthropic
+        API key below, it's stored only in <b>this browser's local storage</b> and sent <b>directly from
+        your browser to Anthropic</b> when you tap "Explain with AI" — never through any server of ours,
+        because this site has no server. Anyone using this browser profile could see the key in dev tools,
+        so only use a personal key on a personal device, and never paste a key into a page you don't control.
+      </div>
+      <label for="apiKey">Anthropic API key</label>
+      <div class="key-row">
+        <input type="password" id="apiKey" placeholder="sk-ant-...">
+        <button class="small-btn" id="saveKeyBtn">Save</button>
+        <button class="small-btn" id="clearKeyBtn">Clear</button>
+      </div>
+      <label for="modelName" style="margin-top:12px;">Model</label>
+      <select id="modelName">
+        <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (fastest, cheapest)</option>
+        <option value="claude-sonnet-5">Claude Sonnet 5 (more thorough)</option>
+      </select>
+      <p style="font-size:13px;margin-top:14px;">Once saved, go run a symptom check, then tap
+      <b>"✨ Explain with AI"</b> on the results screen. It will turn the ranked matches into a short,
+      plain-language explanation — clearly labeled as AI-generated, shown underneath the rule-based
+      results rather than replacing them.</p>
+    </div>
+  </section>
+
+  <!-- HISTORY PANEL -->
+  <section class="panel" id="panel-history">
+    <div class="card">
+      <h3>Saved checks</h3>
+      <p style="font-size:13.5px;">Stored only on this device (browser local storage) — nothing is sent anywhere.</p>
+      <div id="historyList"></div>
+    </div>
+  </section>
+
+  <!-- ABOUT PANEL -->
+  <section class="panel" id="panel-about">
+    <div class="card">
+      <h3>What this tool actually does</h3>
+      <p>This checker compares the symptoms you select against a small reference table of common conditions and scores how closely they overlap. It is rule-based pattern matching, not a trained diagnostic model, and it does not examine you, run tests, or know your full medical history.</p>
+      <p><b>It will get things wrong.</b> Two very different illnesses can share the same three or four symptoms. A tool like this should narrow your thinking and help you describe what you're feeling — it should never replace a clinician, and it should never be the reason you delay care for something serious.</p>
+      <h3 style="margin-top:20px;">When to skip this tool entirely and get help now</h3>
+      <ul style="color:var(--muted);font-size:14px;">
+        <li>Chest pain or pressure, especially with shortness of breath</li>
+        <li>Difficulty breathing or bluish lips/face</li>
+        <li>Sudden confusion, slurred speech, face drooping, or one-sided weakness</li>
+        <li>Vomiting or coughing up blood</li>
+        <li>Severe, sudden headache unlike any before</li>
+        <li>Signs of a severe allergic reaction (swelling of face/throat, hives with breathing trouble)</li>
+      </ul>
+      <p style="margin-top:10px;">In any of these cases, contact your local emergency number immediately.</p>
+      <h3 style="margin-top:20px;">Privacy</h3>
+      <p>Everything runs in your browser. There's no server, no account, and no data leaves your device unless you choose to print or save a report yourself.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>Educational project • Not medical advice • Always consult a qualified healthcare professional</footer>
+
+<script>
+/* ---------------- DATA ---------------- */
+const SYMPTOM_GROUPS = {
+  "General": ["fever","fatigue","chills","body_ache","weight_loss","night_sweats","loss_of_appetite"],
+  "Respiratory": ["cough","sore_throat","runny_nose","shortness_of_breath","chest_pain","wheezing","loss_of_smell"],
+  "Digestive": ["nausea","vomiting","diarrhea","abdominal_pain","bloating","blood_in_stool","heartburn"],
+  "Neurological": ["headache","dizziness","confusion","blurred_vision","numbness","slurred_speech"],
+  "Skin": ["rash","itching","swelling","redness","dry_skin"],
+  "Other": ["joint_pain","muscle_pain","frequent_urination","excessive_thirst","palpitations","insomnia"]
+};
+
+const SYMPTOM_LABELS = {
+  fever:"Fever", fatigue:"Fatigue", chills:"Chills", body_ache:"Body aches", weight_loss:"Unexplained weight loss",
+  night_sweats:"Night sweats", loss_of_appetite:"Loss of appetite",
+  cough:"Cough", sore_throat:"Sore throat", runny_nose:"Runny / blocked nose", shortness_of_breath:"Shortness of breath",
+  chest_pain:"Chest pain", wheezing:"Wheezing", loss_of_smell:"Loss of smell or taste",
+  nausea:"Nausea", vomiting:"Vomiting", diarrhea:"Diarrhea", abdominal_pain:"Abdominal pain", bloating:"Bloating",
+  blood_in_stool:"Blood in stool", heartburn:"Heartburn / acid reflux",
+  headache:"Headache", dizziness:"Dizziness", confusion:"Confusion", blurred_vision:"Blurred vision",
+  numbness:"Numbness / weakness one side", slurred_speech:"Slurred speech",
+  rash:"Skin rash", itching:"Itching", swelling:"Swelling", redness:"Redness / inflammation", dry_skin:"Dry, flaky skin",
+  joint_pain:"Joint pain", muscle_pain:"Muscle pain", frequent_urination:"Frequent urination",
+  excessive_thirst:"Excessive thirst", palpitations:"Heart palpitations", insomnia:"Trouble sleeping"
+};
+
+// weight = how characteristic that symptom is of the condition (1-3)
+const CONDITIONS = [
+  { name:"Common Cold", specialist:"General Physician",
+    symptoms:{runny_nose:3,sore_throat:2,cough:2,fever:1,fatigue:1},
+    precautions:["Rest and stay hydrated","Warm fluids for the throat","Use a humidifier"],
+    medicines:["Paracetamol (for fever/aches)","Antihistamine (for runny nose)"] },
+  { name:"Influenza (Flu)", specialist:"General Physician",
+    symptoms:{fever:3,body_ache:3,fatigue:2,chills:2,cough:2,sore_throat:1,headache:1},
+    precautions:["Rest, fluids, isolate from others","Monitor temperature","Seek care if breathing worsens"],
+    medicines:["Paracetamol (for fever)","Rest is the main treatment"] },
+  { name:"COVID-19-like illness", specialist:"General Physician",
+    symptoms:{fever:2,cough:2,fatigue:2,loss_of_smell:3,sore_throat:1,shortness_of_breath:2,body_ache:1},
+    precautions:["Isolate and test if possible","Monitor oxygen if you have a device","Seek care if breathless at rest"],
+    medicines:["Paracetamol (for fever)","Follow local health guidance"] },
+  { name:"Migraine", specialist:"Neurologist",
+    symptoms:{headache:3,nausea:2,blurred_vision:2,dizziness:1},
+    precautions:["Rest in a dark, quiet room","Avoid known triggers","Stay hydrated"],
+    medicines:["Discuss triggers and options with a doctor"] },
+  { name:"Sinus infection", specialist:"ENT Specialist",
+    symptoms:{headache:2,runny_nose:2,sore_throat:1,fever:1,loss_of_smell:1},
+    precautions:["Steam inhalation","Saline nasal rinse","See ENT if it lasts over 10 days"],
+    medicines:["Decongestant (short-term)"] },
+  { name:"Food poisoning", specialist:"General Physician",
+    symptoms:{vomiting:3,diarrhea:3,abdominal_pain:2,nausea:2,fever:1},
+    precautions:["Oral rehydration solution","Bland diet once tolerated","Seek care if blood in stool or high fever"],
+    medicines:["Oral rehydration salts"] },
+  { name:"Gastroenteritis", specialist:"Gastroenterologist",
+    symptoms:{diarrhea:3,abdominal_pain:2,nausea:2,vomiting:2,fever:1,bloating:1},
+    precautions:["Hydration is priority","Avoid dairy and greasy food temporarily"],
+    medicines:["Oral rehydration salts"] },
+  { name:"Acid reflux (GERD)", specialist:"Gastroenterologist",
+    symptoms:{heartburn:3,bloating:1,abdominal_pain:1,cough:1},
+    precautions:["Avoid lying down right after meals","Smaller, more frequent meals","Avoid spicy/fatty foods"],
+    medicines:["Antacid (short-term)"] },
+  { name:"Asthma / reactive airway", specialist:"Pulmonologist",
+    symptoms:{wheezing:3,shortness_of_breath:3,cough:2,chest_pain:1},
+    precautions:["Avoid known triggers","Keep rescue inhaler accessible if prescribed","Seek urgent care if breathless at rest"],
+    medicines:["Discuss inhaler options with a doctor"] },
+  { name:"Bronchitis", specialist:"Pulmonologist",
+    symptoms:{cough:3,fatigue:1,chest_pain:1,wheezing:1,fever:1},
+    precautions:["Rest, fluids, humid air","Avoid smoke/irritants","See a doctor if cough exceeds 3 weeks"],
+    medicines:["Cough suppressant (short-term)"] },
+  { name:"Urinary tract infection", specialist:"Urologist",
+    symptoms:{frequent_urination:3,abdominal_pain:1,fever:1},
+    precautions:["Drink plenty of water","Avoid holding urine for long periods","See a doctor for antibiotics if confirmed"],
+    medicines:["Requires prescription antibiotics — see a doctor"] },
+  { name:"Type 2 Diabetes (uncontrolled)", specialist:"Endocrinologist",
+    symptoms:{excessive_thirst:3,frequent_urination:3,fatigue:2,blurred_vision:1,weight_loss:1},
+    precautions:["Monitor blood sugar", "Reduce refined sugar intake","See an endocrinologist for evaluation"],
+    medicines:["Requires medical evaluation — do not self-medicate"] },
+  { name:"Allergic reaction / contact dermatitis", specialist:"Dermatologist",
+    symptoms:{rash:3,itching:3,redness:2,swelling:1},
+    precautions:["Identify and avoid the trigger","Avoid scratching","Seek urgent care if throat/face swelling or breathing trouble"],
+    medicines:["Antihistamine (for mild reactions)"] },
+  { name:"Eczema", specialist:"Dermatologist",
+    symptoms:{dry_skin:3,itching:2,redness:2,rash:1},
+    precautions:["Moisturize regularly","Avoid harsh soaps","See a dermatologist if persistent"],
+    medicines:["Gentle moisturizer","Discuss topical options with a doctor"] },
+  { name:"Anxiety-related symptoms", specialist:"Psychiatrist / Psychologist",
+    symptoms:{palpitations:2,insomnia:2,fatigue:1,dizziness:1,nausea:1},
+    precautions:["Grounding and breathing techniques can help in the moment","Reach out to a mental health professional","Reduce caffeine if it worsens symptoms"],
+    medicines:["Speak with a mental health professional about options"] },
+  { name:"Iron-deficiency anemia", specialist:"General Physician / Hematologist",
+    symptoms:{fatigue:3,dizziness:2,blurred_vision:1,palpitations:1},
+    precautions:["Iron-rich foods (leafy greens, legumes, lean meat)","Blood test to confirm before supplementing"],
+    medicines:["Iron supplements only after medical confirmation"] },
+  { name:"Rheumatoid / joint inflammation", specialist:"Rheumatologist",
+    symptoms:{joint_pain:3,swelling:2,fatigue:1,fever:1},
+    precautions:["Gentle movement, avoid overexertion","See a rheumatologist for evaluation and testing"],
+    medicines:["Anti-inflammatory only under medical guidance"] },
+  { name:"Tension headache", specialist:"General Physician",
+    symptoms:{headache:3,muscle_pain:1,fatigue:1},
+    precautions:["Rest, hydration, reduce screen time","Gentle neck/shoulder stretches"],
+    medicines:["Paracetamol (occasional use)"] },
+  { name:"Possible tuberculosis (persistent)", specialist:"Pulmonologist",
+    symptoms:{cough:2,night_sweats:3,weight_loss:3,fever:1,fatigue:1},
+    precautions:["See a doctor promptly for testing if cough lasts over 2-3 weeks with these symptoms","Avoid close contact until evaluated"],
+    medicines:["Requires medical diagnosis and prescribed treatment"] },
+];
+
+// Emergency rule combinations: [symptomKeys required], message
+const EMERGENCY_RULES = [
+  { need:["chest_pain","shortness_of_breath"], msg:"Chest pain combined with shortness of breath can signal a heart or lung emergency." },
+  { need:["blood_in_stool","vomiting"], msg:"Vomiting with blood in stool needs urgent medical evaluation." },
+  { need:["confusion","slurred_speech"], msg:"Confusion with slurred speech can be a sign of stroke — time-critical." },
+  { need:["numbness","slurred_speech"], msg:"One-sided numbness with slurred speech can be a sign of stroke — time-critical." },
+  { need:["swelling","shortness_of_breath"], msg:"Swelling with shortness of breath can indicate a severe allergic reaction or cardiac issue." },
+];
+
+/* ---------------- BUILD SYMPTOM UI ---------------- */
+const groupsEl = document.getElementById('symptomGroups');
+Object.entries(SYMPTOM_GROUPS).forEach(([group, keys], i)=>{
+  const details = document.createElement('details');
+  details.className='group';
+  if(i===0) details.open = true;
+  const summary = document.createElement('summary');
+  summary.textContent = group;
+  details.appendChild(summary);
+  const list = document.createElement('div');
+  list.className='symptom-list';
+  keys.forEach(k=>{
+    const item = document.createElement('label');
+    item.className='symptom-item';
+    item.innerHTML = `<input type="checkbox" value="${k}" class="symptom-cb"> ${SYMPTOM_LABELS[k]}`;
+    list.appendChild(item);
+  });
+  details.appendChild(list);
+  groupsEl.appendChild(details);
+});
+
+const selCount = document.getElementById('selCount');
+function refreshCount(){
+  const n = document.querySelectorAll('.symptom-cb:checked').length;
+  selCount.textContent = n + " selected";
+}
+groupsEl.addEventListener('change', refreshCount);
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    document.getElementById('results').style.display='none';
+    if(btn.dataset.tab==='history') renderHistory();
+  });
+});
+
+/* ---------------- ANALYSIS ---------------- */
+let lastResult = null;
+
+document.getElementById('analyzeBtn').addEventListener('click', ()=>{
+  const selected = Array.from(document.querySelectorAll('.symptom-cb:checked')).map(cb=>cb.value);
+  if(selected.length===0){ alert("Select at least one symptom to continue."); return; }
+
+  const age = parseFloat(document.getElementById('age').value)||null;
+  const temp = parseFloat(document.getElementById('temp').value)||null;
+  const duration = parseFloat(document.getElementById('duration').value)||null;
+  const comorbid = {
+    diabetes: document.getElementById('c-diabetes').checked,
+    heart: document.getElementById('c-heart').checked,
+    immuno: document.getElementById('c-immuno').checked,
+    pregnant: document.getElementById('c-pregnant').checked,
+  };
+
+  // Score each condition
+  const scored = CONDITIONS.map(cond=>{
+    const symKeys = Object.keys(cond.symptoms);
+    const maxScore = symKeys.reduce((s,k)=>s+cond.symptoms[k],0);
+    let matched = 0;
+    let matchedKeys = [];
+    selected.forEach(s=>{
+      if(cond.symptoms[s]){ matched += cond.symptoms[s]; matchedKeys.push(s); }
+    });
+    const overlapCount = matchedKeys.length;
+    if(overlapCount===0) return null;
+    // confidence blends how much of the condition's profile is covered
+    // and a small penalty if the user selected many unrelated symptoms too
+    const coverage = matched / maxScore; // how much of this condition's pattern is present
+    const precision = overlapCount / selected.length; // how much of user's input this explains
+    let confidence = Math.round((coverage*0.7 + precision*0.3) * 100);
+    confidence = Math.max(0, Math.min(97, confidence)); // never claim certainty
+    return {...cond, confidence, matchedKeys};
+  }).filter(Boolean).sort((a,b)=>b.confidence-a.confidence).slice(0,5)
+    .filter(c=>c.confidence>=20);
+
+  // Emergency check
+  const emergencies = EMERGENCY_RULES.filter(r=>r.need.every(k=>selected.includes(k)));
+
+  // Risk score
+  let risk = 0;
+  if(age!==null){ if(age>=65) risk+=20; else if(age<=2) risk+=15; }
+  if(temp!==null && temp>=39) risk+=20;
+  if(selected.includes('shortness_of_breath')) risk+=25;
+  if(selected.includes('chest_pain')) risk+=20;
+  if(selected.includes('confusion')) risk+=20;
+  if(comorbid.diabetes) risk+=10;
+  if(comorbid.heart) risk+=15;
+  if(comorbid.immuno) risk+=15;
+  if(comorbid.pregnant) risk+=10;
+  risk += Math.min(selected.length,10)*2; // symptom burden
+  if(duration!==null && duration>=14) risk+=10;
+
+  let riskLevel = "Low", riskClass="risk-low";
+  if(risk>=60){ riskLevel="High"; riskClass="risk-high"; }
+  else if(risk>=30){ riskLevel="Medium"; riskClass="risk-medium"; }
+  if(emergencies.length){ riskLevel="High — urgent"; riskClass="risk-high"; }
+
+  lastResult = { selected, age, temp, duration, comorbid, scored, emergencies, riskLevel, riskClass, ts: Date.now() };
+  renderResults(lastResult);
+});
+
+function renderResults(r){
+  const results = document.getElementById('results');
+  results.style.display='block';
+
+  const name = document.getElementById('pname').value.trim() || '—';
+  const genderVal = document.getElementById('gender').value || '—';
+  document.getElementById('printMeta').innerHTML = `
+    Name: ${name}<br>
+    Date: ${new Date(r.ts).toLocaleString()}<br>
+    Age: ${r.age ?? '—'} &nbsp; Gender: ${genderVal} &nbsp;
+    Temp: ${r.temp ?? '—'}°C &nbsp; Duration: ${r.duration ?? '—'} day(s)`;
+  document.getElementById('aiOutputSlot').innerHTML = '';
+
+  // Emergency banner
+  const emSlot = document.getElementById('emergencySlot');
+  emSlot.innerHTML = '';
+  if(r.emergencies.length){
+    const div = document.createElement('div');
+    div.className='emergency-banner';
+    div.innerHTML = `<span style="font-size:22px;">🚨</span><div><h3>This combination needs urgent attention</h3>
+      ${r.emergencies.map(e=>`<p>${e.msg}</p>`).join('')}
+      <p style="margin-top:6px;"><b>Contact your local emergency number or go to the nearest emergency department now.</b></p></div>`;
+    emSlot.appendChild(div);
+  }
+
+  // Risk card
+  document.getElementById('riskSlot').innerHTML = `
+    <div class="risk-card ${r.riskClass}">
+      <div><div class="label">Estimated risk level</div><div class="level">${r.riskLevel}</div></div>
+      <div style="text-align:right;font-size:12.5px;color:var(--muted);max-width:220px;">
+        Based on symptom combination, age, duration and existing conditions — not a clinical risk score.
+      </div>
+    </div>`;
+
+  // Conditions
+  const list = document.getElementById('conditionList');
+  list.innerHTML = '';
+  document.getElementById('lowMatchNote').style.display = r.scored.length ? 'none':'block';
+
+  r.scored.forEach(c=>{
+    const div = document.createElement('div');
+    div.className='condition';
+    div.innerHTML = `
+      <div class="condition-head"><h4>${c.name}</h4><span class="pct">${c.confidence}% match</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${c.confidence}%"></div></div>
+      <div class="condition-meta">
+        <span class="tag">See: ${c.specialist}</span>
+        <span class="tag">${c.matchedKeys.length} symptom${c.matchedKeys.length>1?'s':''} matched</span>
+      </div>
+      <ul>${c.precautions.map(p=>`<li>${p}</li>`).join('')}</ul>
+      <div class="confidence-note" style="margin-top:8px;"><b>Medicines (informational only):</b> ${c.medicines.join(', ')}. Always confirm dosage and suitability with a pharmacist or doctor before taking anything.</div>
+    `;
+    list.appendChild(div);
+  });
+
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.bar-fill').forEach(el=>{ el.style.width = el.style.width; });
+  });
+
+  results.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('.symptom-cb').forEach(cb=>cb.checked=false);
+  document.getElementById('results').style.display='none';
+  refreshCount();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+
+/* ---------------- HISTORY (localStorage) ---------------- */
+const HIST_KEY = 'symptom_checker_history_v1';
+
+document.getElementById('saveHistBtn').addEventListener('click', ()=>{
+  if(!lastResult) return;
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+  hist.unshift(lastResult);
+  localStorage.setItem(HIST_KEY, JSON.stringify(hist.slice(0,25)));
+  alert('Saved to history (stored only on this device).');
+});
+
+function renderHistory(){
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+  const el = document.getElementById('historyList');
+  if(!hist.length){ el.innerHTML = '<div class="empty-state">No saved checks yet. Run a symptom check and tap "Save to history".</div>'; return; }
+  el.innerHTML = hist.map(h=>{
+    const date = new Date(h.ts).toLocaleString();
+    const top = h.scored[0];
+    return `<div class="hist-item">
+      <div class="when">${date}</div>
+      <div style="font-weight:700;margin:4px 0;">${top ? top.name+' — '+top.confidence+'% match' : 'No strong match found'}</div>
+      <div style="font-size:13px;color:var(--muted);">Symptoms: ${h.selected.map(s=>SYMPTOM_LABELS[s]).join(', ')}</div>
+      <div style="font-size:13px;color:var(--muted);">Risk level: ${h.riskLevel}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- TRAIN FROM UPLOADED DATA ---------------- */
+const TRAINED_KEY = 'trained_conditions_v1';
+const TRAINED_SYMPTOMS_KEY = 'trained_symptoms_v1';
+
+function slugify(s){
+  return String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+}
+function titleCase(s){
+  return String(s).trim().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
+
+function loadTrainedIntoApp(){
+  const trained = JSON.parse(localStorage.getItem(TRAINED_KEY)||'null');
+  const trainedSymptoms = JSON.parse(localStorage.getItem(TRAINED_SYMPTOMS_KEY)||'null');
+  if(trained && trained.length){
+    CONDITIONS.push(...trained);
+    document.getElementById('trainSummary').innerHTML = `<div class="summary-box">
+      Loaded a previously trained dataset (${trained.length} condition${trained.length>1?'s':''}) from this browser's storage.</div>`;
+  }
+  if(trainedSymptoms && trainedSymptoms.length){
+    const newKeys = trainedSymptoms.filter(k=>!SYMPTOM_LABELS[k]);
+    if(newKeys.length){
+      newKeys.forEach(k=>SYMPTOM_LABELS[k]=titleCase(k));
+      SYMPTOM_GROUPS["From your dataset"] = newKeys;
+      rebuildSymptomUI();
+    }
+  }
+}
+
+function rebuildSymptomUI(){
+  groupsEl.innerHTML = '';
+  Object.entries(SYMPTOM_GROUPS).forEach(([group, keys], i)=>{
+    const details = document.createElement('details');
+    details.className='group';
+    const summary = document.createElement('summary');
+    summary.textContent = group;
+    details.appendChild(summary);
+    const list = document.createElement('div');
+    list.className='symptom-list';
+    keys.forEach(k=>{
+      const item = document.createElement('label');
+      item.className='symptom-item';
+      item.innerHTML = `<input type="checkbox" value="${k}" class="symptom-cb"> ${SYMPTOM_LABELS[k]}`;
+      list.appendChild(item);
+    });
+    details.appendChild(list);
+    groupsEl.appendChild(details);
+  });
+}
+
+function trainFromRows(rows){
+  if(!rows.length){ throw new Error("The file has no data rows."); }
+  const headers = Object.keys(rows[0]);
+  const labelCol = headers.find(h=>['disease','prognosis','diagnosis','condition'].includes(h.trim().toLowerCase()));
+  if(!labelCol){ throw new Error("Couldn't find a Disease/prognosis/diagnosis column. Add a column with that header containing the disease name for each row."); }
+
+  const symptomCols = headers.filter(h=>{
+    if(h===labelCol) return false;
+    return rows.every(r=>{
+      const v = r[h];
+      return v===0||v===1||v==='0'||v==='1'||v===undefined||v===null||v==='';
+    });
+  });
+  if(!symptomCols.length){ throw new Error("Couldn't find any 0/1 symptom columns alongside the disease column."); }
+
+  const bySymptomKey = {};
+  symptomCols.forEach(h=>bySymptomKey[h]=slugify(h));
+
+  const diseaseGroups = {};
+  rows.forEach(r=>{
+    const disease = String(r[labelCol]||'').trim();
+    if(!disease) return;
+    diseaseGroups[disease] = diseaseGroups[disease] || [];
+    diseaseGroups[disease].push(r);
+  });
+
+  const trained = Object.entries(diseaseGroups).map(([disease, drows])=>{
+    const symptoms = {};
+    symptomCols.forEach(h=>{
+      const key = bySymptomKey[h];
+      const positives = drows.filter(r=>Number(r[h])===1).length;
+      const freq = positives / drows.length;
+      if(freq>0) symptoms[key] = Math.round(freq*3*10)/10; // scale to ~0.1-3
+    });
+    return {
+      name: disease + " (from your data)",
+      specialist: "General Physician — confirm specialty with a doctor",
+      symptoms,
+      precautions: ["Derived from your dataset — confirm care steps with a qualified clinician."],
+      medicines: ["Not provided by dataset — do not self-medicate; consult a doctor or pharmacist."]
+    };
+  }).filter(c=>Object.keys(c.symptoms).length>0);
+
+  return { trained, symptomKeys: Object.values(bySymptomKey), diseaseCount: trained.length, rowCount: rows.length };
+}
+
+function handleTrainingFile(file){
+  const summaryEl = document.getElementById('trainSummary');
+  summaryEl.innerHTML = `<div class="summary-box">Reading ${file.name}…</div>`;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {defval:0});
+      const result = trainFromRows(rows);
+
+      localStorage.setItem(TRAINED_KEY, JSON.stringify(result.trained));
+      localStorage.setItem(TRAINED_SYMPTOMS_KEY, JSON.stringify(result.symptomKeys));
+      CONDITIONS.push(...result.trained);
+
+      const newKeys = result.symptomKeys.filter(k=>!SYMPTOM_LABELS[k] || SYMPTOM_GROUPS["From your dataset"]===undefined);
+      result.symptomKeys.forEach(k=>{ if(!SYMPTOM_LABELS[k]) SYMPTOM_LABELS[k]=titleCase(k); });
+      SYMPTOM_GROUPS["From your dataset"] = result.symptomKeys;
+      rebuildSymptomUI();
+      refreshCount();
+
+      summaryEl.innerHTML = `<div class="summary-box">
+        <b>Trained successfully.</b>
+        <ul>
+          <li>${result.rowCount} case rows read</li>
+          <li>${result.diseaseCount} disease pattern(s) learned</li>
+          <li>${result.symptomKeys.length} symptom column(s) detected and added to the checklist</li>
+        </ul>
+        These are now included alongside the built-in dataset when you run a check. This browser will remember it — use "Reset to built-in dataset" to remove it.
+      </div>`;
+    }catch(err){
+      summaryEl.innerHTML = `<div class="warn-box">Couldn't train from this file: ${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+dropZone.addEventListener('click', ()=>fileInput.click());
+fileInput.addEventListener('change', (e)=>{ if(e.target.files[0]) handleTrainingFile(e.target.files[0]); });
+['dragover','dragenter'].forEach(evt=>dropZone.addEventListener(evt, e=>{e.preventDefault();dropZone.classList.add('drag');}));
+['dragleave','drop'].forEach(evt=>dropZone.addEventListener(evt, e=>{e.preventDefault();dropZone.classList.remove('drag');}));
+dropZone.addEventListener('drop', e=>{
+  const f = e.dataTransfer.files[0];
+  if(f) handleTrainingFile(f);
+});
+document.getElementById('clearTrainedBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(TRAINED_KEY);
+  localStorage.removeItem(TRAINED_SYMPTOMS_KEY);
+  location.reload();
+});
+
+loadTrainedIntoApp();
+
+/* ---------------- AI EXPLAIN (optional, bring your own key) ---------------- */
+const KEY_STORAGE = 'anthropic_api_key_v1';
+const apiKeyInput = document.getElementById('apiKey');
+apiKeyInput.value = localStorage.getItem(KEY_STORAGE) || '';
+
+document.getElementById('saveKeyBtn').addEventListener('click', ()=>{
+  localStorage.setItem(KEY_STORAGE, apiKeyInput.value.trim());
+  alert('Key saved to this browser only.');
+});
+document.getElementById('clearKeyBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(KEY_STORAGE);
+  apiKeyInput.value = '';
+  alert('Key cleared.');
+});
+
+document.getElementById('aiExplainBtn').addEventListener('click', async ()=>{
+  const key = localStorage.getItem(KEY_STORAGE);
+  const slot = document.getElementById('aiOutputSlot');
+  if(!key){
+    slot.innerHTML = `<div class="warn-box">No API key set. Go to the "AI explain (optional)" tab, add your own Anthropic API key, then come back and try again.</div>`;
+    return;
+  }
+  if(!lastResult){ return; }
+  slot.innerHTML = `<div class="ai-output">Thinking…</div>`;
+  const model = document.getElementById('modelName').value;
+
+  const prompt = `A person used a symptom-checking tool and got this rule-based output. Explain it back to them in plain, warm, non-alarming language in under 150 words. Do not present it as a diagnosis. End with one sentence on when to see a doctor.
+
+Selected symptoms: ${lastResult.selected.map(s=>SYMPTOM_LABELS[s]).join(', ')}
+Risk level: ${lastResult.riskLevel}
+Top matches: ${lastResult.scored.map(c=>`${c.name} (${c.confidence}%)`).join('; ') || 'none strong'}`;
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 400,
+        messages:[{role:'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    if(data.error){ throw new Error(data.error.message || 'API error'); }
+    const text = (data.content||[]).map(b=>b.text||'').join('\n').trim();
+    slot.innerHTML = `<div class="ai-output"><b>✨ AI explanation</b> — generated by ${model}, not a diagnosis:\n\n${text}</div>`;
+  }catch(err){
+    slot.innerHTML = `<div class="warn-box">Couldn't get an AI explanation: ${err.message}. Check that your API key is valid and has available credit.</div>`;
+  }
+});
+</script>
+</body>
+</html>
