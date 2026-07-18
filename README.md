@@ -40,7 +40,7 @@ Render static sites can idle after inactivity; GitHub Pages never does.
 
 | Results — Risk & Matches | Emergency Banner |
 |---|---|
-| ![Results screen](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20131433.jpg) | ![Emergency banner](screenshots/emergency.png](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20132242.jpg) |
+| ![Results screen](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20131433.jpg) | ![Emergency banner](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20132242.jpg) |
 
 | Train From Data | AI Explain (optional) |
 |---|---|
