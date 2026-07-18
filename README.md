@@ -44,7 +44,7 @@ Render static sites can idle after inactivity; GitHub Pages never does.
 
 | Train From Data | AI Explain (optional) |
 |---|---|
-| ![Train from data](screenshots/train-data.png) | ![AI explain](screenshots/ai-explain.png) |
+| ![Train from data](screenshots/train-data.png](https://github.com/Shristi502102/AI-Powered_Healthcare-Diagnosis-Assistant/blob/main/image/Screenshot%202026-07-18%20133632.jpg)) | ![AI explain](screenshots/ai-explain.png) |
 
 | History Tab | Printable PDF Report |
 |---|---|
